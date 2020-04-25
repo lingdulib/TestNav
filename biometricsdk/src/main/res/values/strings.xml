@@ -1,0 +1,8 @@
+<resources>
+
+    <string name="prompt_info_title">指纹认证</string>
+    <string name="prompt_info_subtitle">请认证登录</string>
+    <string name="prompt_info_description">登录需要指纹认证</string>
+    <string name="prompt_info_use_app_password">取消</string>
+    <string name="secret_key_name">biometric_sdk_encryption_key</string>
+</resources>
