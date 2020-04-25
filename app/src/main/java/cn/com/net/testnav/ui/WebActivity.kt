@@ -1,23 +1,28 @@
 package cn.com.net.testnav.ui
 
-import android.annotation.SuppressLint
+import android.Manifest
 import android.app.Activity
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
-import android.text.TextUtils
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.*
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
-import androidx.webkit.WebSettingsCompat
+import androidx.core.app.ActivityCompat
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewCompat
 import cn.com.net.testnav.databinding.ActivityWebBinding
+import cn.ling.yu.permission.checkSelfPermissionCompat
+import cn.ling.yu.permission.obtainAllPermissionGrantResult
+import cn.ling.yu.permission.requestPermissionsCompat
+import cn.ling.yu.permission.shouldShowRequestPermissionRationaleCompat
+import com.google.android.material.snackbar.Snackbar
+
 
 /**
  * webview
@@ -25,11 +30,16 @@ import cn.com.net.testnav.databinding.ActivityWebBinding
  * @author Yu L.
  *
  */
-class WebActivity : AppCompatActivity() {
+class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResultCallback{
 
     private val TAG = WebActivity::class.java.simpleName
     private lateinit var binding:ActivityWebBinding
     private var mFilePathCallback:ValueCallback<Array<Uri>>?=null
+    companion object{
+        private const val RC_CAMERA_PERM = 123
+        private const val RC_STORE_LOCATION=124
+        private const val PERMISSION_REQUEST_CAMERA = 0
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,7 +47,6 @@ class WebActivity : AppCompatActivity() {
         setContentView(binding.root)
         val webPackageInfo = WebViewCompat.getCurrentWebViewPackage(this)
         val versionName = webPackageInfo?.versionName
-        binding.actWeb.loadUrl("https://www.baidu.com")
         val webChromeClient=object:WebChromeClient(){
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
@@ -109,6 +118,17 @@ class WebActivity : AppCompatActivity() {
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             binding.actWeb.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND,true)
         }
+        if (checkSelfPermissionCompat(Manifest.permission.CAMERA) ==
+            PackageManager.PERMISSION_GRANTED) {
+            loadUrl()
+        } else {
+            requestCameraPermission()
+        }
+    }
+
+
+    private fun loadUrl(){
+        binding.actWeb.loadUrl("https://www.baidu.com")
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -132,4 +152,35 @@ class WebActivity : AppCompatActivity() {
         }
         return super.onKeyUp(keyCode, event)
     }
+
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        if (requestCode == PERMISSION_REQUEST_CAMERA) {
+            // Request for camera permission.
+            if (obtainAllPermissionGrantResult(grantResults)) {
+                Snackbar.make(window.decorView,"权限以获得",Snackbar.LENGTH_LONG).show()
+                loadUrl()
+            } else {
+                // Permission request was denied.
+                Snackbar.make(window.decorView,"权限未获得",Snackbar.LENGTH_LONG).show()
+            }
+        }
+
+    }
+
+    private fun requestCameraPermission() {
+        // Permission has not been granted and must be requested.
+        if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.CAMERA)) {
+            requestPermissionsCompat(arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_REQUEST_CAMERA)
+        } else {
+            requestPermissionsCompat(arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_REQUEST_CAMERA)
+        }
+    }
+
 }
