@@ -15,6 +15,7 @@
  */
 package cn.com.net.testnav.biometric
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
 import androidx.activity.viewModels
@@ -22,6 +23,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Observer
 import cn.com.net.testnav.databinding.ActivityEnableBiometricLoginBinding
+import cn.com.net.testnav.ui.WebActivity
 import cn.ling.yu.biometricsdk.BiometricCipherResultCallBack
 import cn.ling.yu.biometricsdk.BiometricDialogUtils
 import com.google.android.material.snackbar.Snackbar
@@ -84,6 +86,8 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         BiometricDialogUtils.setBiometricCipherResultCallBack(object:BiometricCipherResultCallBack{
             override fun obtainCipher(cipher: Cipher) {
                 BiometricDialogUtils.saveCiphertextWrapper("",cipher,this@EnableBiometricLoginActivity)
+                val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                startActivity(intent)
                 finish()
             }
 

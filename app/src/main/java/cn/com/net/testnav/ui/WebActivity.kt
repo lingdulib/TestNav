@@ -37,7 +37,7 @@ class WebActivity : AppCompatActivity() {
         setContentView(binding.root)
         val webPackageInfo = WebViewCompat.getCurrentWebViewPackage(this)
         val versionName = webPackageInfo?.versionName
-        binding.actWeb.loadUrl("http://www.script-tutorials.com/demos/199/index.html")
+        binding.actWeb.loadUrl("https://www.baidu.com")
         val webChromeClient=object:WebChromeClient(){
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
