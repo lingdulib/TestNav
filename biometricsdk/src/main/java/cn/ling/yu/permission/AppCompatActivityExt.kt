@@ -1,6 +1,9 @@
 package cn.ling.yu.permission
 
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.provider.Settings
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 
@@ -38,5 +41,12 @@ fun AppCompatActivity.obtainPermissionDeniedResultList(permissionsArray: Array<o
          }
      }
      return deniedList
+}
+
+fun AppCompatActivity.showAppSettingDetail(requestCode:Int){
+    val intent=Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+        .setData(Uri.fromParts("package",packageName,null))
+        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+    startActivityForResult(intent,requestCode)
 }
 

@@ -2,6 +2,8 @@ package cn.com.net.testnav.ui
 
 import android.Manifest
 import android.app.Activity
+import android.app.AppOpsManager
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
@@ -9,6 +11,8 @@ import android.net.Uri
 import android.net.http.SslError
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
+import android.provider.Settings
 import android.util.Log
 import android.view.KeyEvent
 import android.webkit.*
@@ -17,10 +21,7 @@ import androidx.core.app.ActivityCompat
 import androidx.webkit.WebViewClientCompat
 import androidx.webkit.WebViewCompat
 import cn.com.net.testnav.databinding.ActivityWebBinding
-import cn.ling.yu.permission.checkSelfPermissionCompat
-import cn.ling.yu.permission.obtainAllPermissionGrantResult
-import cn.ling.yu.permission.requestPermissionsCompat
-import cn.ling.yu.permission.shouldShowRequestPermissionRationaleCompat
+import cn.ling.yu.permission.*
 import com.google.android.material.snackbar.Snackbar
 
 
@@ -118,8 +119,9 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             binding.actWeb.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND,true)
         }
-        if (checkSelfPermissionCompat(Manifest.permission.CAMERA) ==
-            PackageManager.PERMISSION_GRANTED) {
+        val permissions=arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION)
+        val denPermissions=obtainPermissionDeniedResultList(permissions).size
+        if (denPermissions==0) {
             loadUrl()
         } else {
             requestCameraPermission()
@@ -138,6 +140,14 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
             Log.e(TAG,"urls:$urls")
             mFilePathCallback?.onReceiveValue(urls)
             mFilePathCallback = null
+        }else if(requestCode==200){
+            Handler().postDelayed({
+                if(Settings.canDrawOverlays(this)){//需要重启ui,检测设置中打开权限
+
+                }else{
+
+                }
+            },500)
         }
     }
 
@@ -166,7 +176,12 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
                 loadUrl()
             } else {
                 // Permission request was denied.
-                Snackbar.make(window.decorView,"权限未获得",Snackbar.LENGTH_LONG).show()
+                if(!shouldShowRequestPermissionRationaleCompat(Manifest.permission.ACCESS_FINE_LOCATION)){
+                    showAppSettingDetail(200)
+                    Snackbar.make(window.decorView,"权限被拒绝，并勾选不再提示。",Snackbar.LENGTH_LONG).show()
+                }else{
+                    Snackbar.make(window.decorView,"下次请求向用户解释",Snackbar.LENGTH_LONG).show()
+                }
             }
         }
 
@@ -174,7 +189,9 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
 
     private fun requestCameraPermission() {
         // Permission has not been granted and must be requested.
-        if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.CAMERA)) {
+        //曾经被拒绝，并未勾选不在提示时返回true
+        if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.ACCESS_FINE_LOCATION)) {
+            Snackbar.make(window.decorView,"解释权限是做什么用的",Snackbar.LENGTH_LONG).show()
             requestPermissionsCompat(arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_FINE_LOCATION),
                 PERMISSION_REQUEST_CAMERA)
         } else {

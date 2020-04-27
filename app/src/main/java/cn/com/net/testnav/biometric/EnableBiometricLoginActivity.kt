@@ -37,7 +37,11 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         val binding = ActivityEnableBiometricLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.cancel.setOnClickListener { finish() }
+        binding.cancel.setOnClickListener {
+            val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+            startActivity(intent)
+            finish()
+        }
 
         loginViewModel.loginWithPasswordFormState.observe(this, Observer { formState ->
             val loginState = formState ?: return@Observer
