@@ -119,7 +119,10 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
         if(Build.VERSION.SDK_INT>=Build.VERSION_CODES.O){
             binding.actWeb.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_BOUND,true)
         }
-        val permissions=arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA,Manifest.permission.ACCESS_FINE_LOCATION)
+        val permissions=ArrayList<String>()
+        permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+        permissions.add(Manifest.permission.CAMERA)
+        permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
         val denPermissions=obtainPermissionDeniedResultList(permissions).size
         if (denPermissions==0) {
             loadUrl()
@@ -192,11 +195,17 @@ class WebActivity : AppCompatActivity(),ActivityCompat.OnRequestPermissionsResul
         //曾经被拒绝，并未勾选不在提示时返回true
         if (shouldShowRequestPermissionRationaleCompat(Manifest.permission.ACCESS_FINE_LOCATION)) {
             Snackbar.make(window.decorView,"解释权限是做什么用的",Snackbar.LENGTH_LONG).show()
-            requestPermissionsCompat(arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSION_REQUEST_CAMERA)
+            val permissions=ArrayList<String>()
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            permissions.add(Manifest.permission.CAMERA)
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            requestPermissionsCompat(permissions, PERMISSION_REQUEST_CAMERA)
         } else {
-            requestPermissionsCompat(arrayOf(Manifest.permission.CAMERA,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSION_REQUEST_CAMERA)
+            val permissions=ArrayList<String>()
+            permissions.add(Manifest.permission.WRITE_EXTERNAL_STORAGE)
+            permissions.add(Manifest.permission.CAMERA)
+            permissions.add(Manifest.permission.ACCESS_FINE_LOCATION)
+            requestPermissionsCompat(permissions, PERMISSION_REQUEST_CAMERA)
         }
     }
 
