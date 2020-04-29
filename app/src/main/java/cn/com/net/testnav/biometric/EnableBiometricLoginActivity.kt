@@ -19,6 +19,7 @@ import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
+import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
@@ -42,32 +43,7 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         val binding = ActivityEnableBiometricLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.cancel.setOnClickListener {
-            val permissions= arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
-            val permissionRequestBean=PermissionRequestBean(permissions,200,201,null)
-            PermissionRequestEngine.with(this)
-                .requestPermission(permissionRequestBean)
-                .setPermissionAuthorListener(object :PermissionAuthorListener{
-                    override fun allGrantPermissions(permissions: ArrayList<String>?) {
-                        val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
-                        startActivity(intent)
-                        finish()
-                    }
-
-                    override fun remindPermissions(permissions: ArrayList<String>?) {
-                        Snackbar.make(window.decorView, "到系统设置打开权限${permissions.toString()}",Snackbar.LENGTH_LONG).show()
-                    }
-
-                    override fun againPermissions() {
-                        Snackbar.make(window.decorView,"restart",Snackbar.LENGTH_LONG).show()
-                    }
-
-                    override fun someDeniedPermissions(
-                        askPermissions: ArrayList<String>?) {
-                        Snackbar.make(window.decorView,"some"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
-                    }
-
-                })
-
+            requestSysPermision()
         }
 
         loginViewModel.loginWithPasswordFormState.observe(this, Observer { formState ->
@@ -135,5 +111,120 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
 
     private fun failResultCallBack(code:Int,error:String?){
         Snackbar.make(window.decorView,error?:"认证失败.",Snackbar.LENGTH_INDEFINITE).setAction("确定",null).show()
+    }
+
+    private fun requestSysPermision(){
+        val permissions= arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
+        val permissionRequestBean=PermissionRequestBean(permissions,200,201,null)
+        PermissionRequestEngine.with(this)
+            .requestPermission(permissionRequestBean)
+            .setPermissionAuthorListener(object :PermissionAuthorListener{
+                override fun allGrantPermissions(permissions: ArrayList<String>?) {
+                    val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+
+                override fun remindPermissions(permissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView, "到系统设置打开权限${permissions.toString()}",Snackbar.LENGTH_LONG).show()
+                    requestAgainPermission(permissions)
+                }
+
+                override fun againPermissions() {
+                    Snackbar.make(window.decorView,"restart",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun someDeniedPermissions(
+                    askPermissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView,"some"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
+                    requestAskPermission(askPermissions)
+                }
+
+            })
+    }
+
+    private fun requestAskPermission(permissions:ArrayList<String>?){
+        val permissionRequestBean=PermissionRequestBean(permissions,201,202,null)
+        PermissionRequestEngine.with(this)
+            .requestAskPermission(permissionRequestBean)
+            .setPermissionAuthorListener(object :PermissionAuthorListener{
+                override fun allGrantPermissions(permissions: ArrayList<String>?) {
+                    val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+
+                override fun remindPermissions(permissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView, "到系统设置打开权限ask${permissions.toString()}",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun againPermissions() {
+                    Snackbar.make(window.decorView,"restartAsk",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun someDeniedPermissions(
+                    askPermissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView,"someAsk"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
+                }
+
+            })
+    }
+
+    private fun requestAgainPermission(permissions: ArrayList<String>?){
+        val permissionRequestBean=PermissionRequestBean(permissions,203,204,null)
+        PermissionRequestEngine.with(this)
+            .requestOpenPermission(permissionRequestBean)
+            .setPermissionAuthorListener(object :PermissionAuthorListener{
+                override fun allGrantPermissions(permissions: ArrayList<String>?) {
+                    val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+
+                override fun remindPermissions(permissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView, "到系统设置打开权限ask2${permissions.toString()}",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun againPermissions() {
+                    Snackbar.make(window.decorView,"restartAsk288",Snackbar.LENGTH_LONG).setAction("确定"){
+                        requestRestartPermission(permissions)
+                    }.show()
+                }
+
+                override fun someDeniedPermissions(
+                    askPermissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView,"someAsk2"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
+                }
+
+            })
+
+    }
+
+    private fun requestRestartPermission(permissions: ArrayList<String>?){
+        val permissionRequestBean=PermissionRequestBean(permissions,205,206,null)
+        PermissionRequestEngine.with(this)
+            .queryPermissionAuthor(permissionRequestBean)
+            .setPermissionAuthorListener(object :PermissionAuthorListener{
+                override fun allGrantPermissions(permissions: ArrayList<String>?) {
+                    val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                    startActivity(intent)
+                    finish()
+                }
+
+                override fun remindPermissions(permissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView, "到系统设置打开权限ask3${permissions.toString()}",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun againPermissions() {
+                    Snackbar.make(window.decorView,"restartAsk3",Snackbar.LENGTH_LONG).show()
+                }
+
+                override fun someDeniedPermissions(
+                    askPermissions: ArrayList<String>?) {
+                    Snackbar.make(window.decorView,"someAsk3"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
+                }
+
+            })
+
     }
 }

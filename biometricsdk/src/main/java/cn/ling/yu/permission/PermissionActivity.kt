@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.os.Handler
 import android.view.KeyEvent
 import android.view.WindowManager
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -40,10 +41,10 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
             ) { finish() }
             return
         }
-        PermissionRequestEngine.registerPermissionEngine(this)
         val permissionArrs = mPermissionRequestBean?.permissionList
         when(permissionRequestType){
             PERMISSION_REQUEST->{
+                PermissionRequestEngine.registerPermissionEngine(this)
                 if (permissionArrs != null && permissionArrs.isNotEmpty()) {
                     if (obtainPermissionDeniedResultList(permissionArrs).isEmpty()) {
                         PermissionRequestEngine.sendPermissionEngine(
@@ -72,6 +73,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     .setPositiveButton("确定"
                     ) { p0, _ -> if(permissionArrs!=null && permissionArrs.isNotEmpty()){
                         p0.dismiss()
+                        PermissionRequestEngine.registerPermissionEngine(this)
                         requestPermission(permissionArrs)
                     } }.setNegativeButton("取消"){p0,_->
                         run {
@@ -86,6 +88,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     .setPositiveButton("去设置"
                     ) { p0, _ -> if(permissionArrs!=null && permissionArrs.isNotEmpty()){
                         p0.dismiss()
+                        PermissionRequestEngine.registerPermissionEngine(this)
                         showAppSettingDetail(mPermissionRequestBean!!.remindRequestCode)
                     } }.setNegativeButton("取消"){p0,_->
                         run {
@@ -95,6 +98,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     }.create().show()
             }
             PERMISSION_ASK_NOT_AGAIN_REQUEST-> {
+                PermissionRequestEngine.registerPermissionEngine(this)
                 if (permissionArrs != null && permissionArrs.isNotEmpty()) {
                     if (obtainPermissionDeniedResultList(permissionArrs).isEmpty()) {
                         PermissionRequestEngine.sendPermissionEngine(
@@ -117,7 +121,6 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == mPermissionRequestBean!!.remindRequestCode) {
             Handler().postDelayed({
-                //FXIME 重新定义
                 PermissionRequestEngine.sendPermissionEngine(
                     this,
                      PERMISSION_RESTART_RESULTS,
