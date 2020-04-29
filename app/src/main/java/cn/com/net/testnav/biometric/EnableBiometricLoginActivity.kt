@@ -43,7 +43,7 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         val binding = ActivityEnableBiometricLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.cancel.setOnClickListener {
-            requestSysPermision()
+            finish()
         }
 
         loginViewModel.loginWithPasswordFormState.observe(this, Observer { formState ->
@@ -93,9 +93,7 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         BiometricDialogUtils.setBiometricCipherResultCallBack(object:BiometricCipherResultCallBack{
             override fun obtainCipher(cipher: Cipher) {
                 BiometricDialogUtils.saveCiphertextWrapper("",cipher,this@EnableBiometricLoginActivity)
-                val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
-                startActivity(intent)
-                finish()
+                requestSysPermision()
             }
 
             override fun obtainDCipher(cipher: Cipher) {
