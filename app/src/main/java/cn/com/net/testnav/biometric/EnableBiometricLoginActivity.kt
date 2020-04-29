@@ -15,6 +15,7 @@
  */
 package cn.com.net.testnav.biometric
 
+import android.Manifest
 import android.content.Intent
 import android.os.Bundle
 import android.view.inputmethod.EditorInfo
@@ -26,6 +27,9 @@ import cn.com.net.testnav.databinding.ActivityEnableBiometricLoginBinding
 import cn.com.net.testnav.ui.WebActivity
 import cn.ling.yu.biometricsdk.BiometricCipherResultCallBack
 import cn.ling.yu.biometricsdk.BiometricDialogUtils
+import cn.ling.yu.permission.PermissionAuthorListener
+import cn.ling.yu.permission.PermissionRequestEngine
+import cn.ling.yu.permission.bean.PermissionRequestBean
 import com.google.android.material.snackbar.Snackbar
 import javax.crypto.Cipher
 
@@ -38,9 +42,32 @@ class EnableBiometricLoginActivity : AppCompatActivity() {
         val binding = ActivityEnableBiometricLoginBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.cancel.setOnClickListener {
-            val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
-            startActivity(intent)
-            finish()
+            val permissions= arrayListOf(Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA)
+            val permissionRequestBean=PermissionRequestBean(permissions,200,201,null)
+            PermissionRequestEngine.with(this)
+                .requestPermission(permissionRequestBean)
+                .setPermissionAuthorListener(object :PermissionAuthorListener{
+                    override fun allGrantPermissions(permissions: ArrayList<String>?) {
+                        val intent=Intent(this@EnableBiometricLoginActivity,WebActivity::class.java)
+                        startActivity(intent)
+                        finish()
+                    }
+
+                    override fun remindPermissions(permissions: ArrayList<String>?) {
+                        Snackbar.make(window.decorView, "到系统设置打开权限${permissions.toString()}",Snackbar.LENGTH_LONG).show()
+                    }
+
+                    override fun againPermissions() {
+                        Snackbar.make(window.decorView,"restart",Snackbar.LENGTH_LONG).show()
+                    }
+
+                    override fun someDeniedPermissions(
+                        askPermissions: ArrayList<String>?) {
+                        Snackbar.make(window.decorView,"some"+askPermissions.toString(),Snackbar.LENGTH_LONG).show()
+                    }
+
+                })
+
         }
 
         loginViewModel.loginWithPasswordFormState.observe(this, Observer { formState ->

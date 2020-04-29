@@ -1,19 +1,16 @@
 package cn.ling.yu.permission
 
-import android.Manifest
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
-import android.provider.Settings
-import android.text.TextUtils
 import android.view.KeyEvent
-import android.view.View
+import android.view.WindowManager
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import cn.ling.yu.permission.bean.PermissionRequestBean
 import com.google.android.material.snackbar.Snackbar
+
 
 /**
  * 申请权限
@@ -24,6 +21,8 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
     private var mPermissionRequestBean: PermissionRequestBean? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        window.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE
+                    or WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH)
         super.onCreate(savedInstanceState)
         loadPermission()
     }
@@ -50,8 +49,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                         PermissionRequestEngine.sendPermissionEngine(
                             this,
                             PERMISSION_ALL_GRANT_RESULTS,
-                            mPermissionRequestBean!!.permissionList,
-                            null
+                            mPermissionRequestBean!!.permissionList
                         )
                         finish()
                     } else {
@@ -64,7 +62,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                         Snackbar.LENGTH_INDEFINITE
                     ).setAction(
                         "确定"
-                    ) { unRegisterEngine() }
+                    ) { finish()}
                     return
                 }
             }
@@ -78,11 +76,11 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     } }.setNegativeButton("取消"){p0,_->
                         run {
                             p0.dismiss()
-                            unRegisterEngine()
+                            finish()
                         }
                     }.create().show()
             }
-            PERMISSION_ALL_DENIED_REQUEST->{
+            PERMISSION_REMIND_DENIED_REQUEST->{
                 AlertDialog.Builder(this).setTitle("权限申请")
                     .setMessage(mPermissionRequestBean!!.desc?:"使用此项功能，应用需要此项权限.")
                     .setPositiveButton("去设置"
@@ -92,9 +90,24 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     } }.setNegativeButton("取消"){p0,_->
                         run {
                             p0.dismiss()
-                            unRegisterEngine()
+                            finish()
                         }
                     }.create().show()
+            }
+            PERMISSION_ASK_NOT_AGAIN_REQUEST-> {
+                if (permissionArrs != null && permissionArrs.isNotEmpty()) {
+                    if (obtainPermissionDeniedResultList(permissionArrs).isEmpty()) {
+                        PermissionRequestEngine.sendPermissionEngine(
+                            this,
+                            PERMISSION_ALL_GRANT_RESULTS,
+                            mPermissionRequestBean!!.permissionList)
+                        finish()
+                    }else{
+                        Snackbar.make(window.decorView,"权限未授权,请到设置应用管理，开启权限,以免影响正常使用.",Snackbar.LENGTH_INDEFINITE).setAction("确定"){
+                            finish()
+                        }.show()
+                    }
+                }
             }
         }
 
@@ -104,13 +117,13 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == mPermissionRequestBean!!.remindRequestCode) {
             Handler().postDelayed({
+                //FXIME 重新定义
                 PermissionRequestEngine.sendPermissionEngine(
                     this,
-                    PERMISSION_AGAIN_NOT_REMIND,
-                    null,
+                     PERMISSION_RESTART_RESULTS,
                     null
                 )
-                finish()
+               finish()
             }, 500)
         }
     }
@@ -126,10 +139,9 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                 PermissionRequestEngine.sendPermissionEngine(
                     this,
                     PERMISSION_ALL_GRANT_RESULTS,
-                    mPermissionRequestBean!!.permissionList,
-                    null
+                    mPermissionRequestBean!!.permissionList
                 )
-                finish()
+              finish()
             } else {
                 val deniedList =
                     obtainPermissionDeniedResultList(mPermissionRequestBean!!.permissionList)
@@ -139,16 +151,14 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     PermissionRequestEngine.sendPermissionEngine(
                         this,
                         PERMISSION_SOME_DENIED_RESULTS,
-                        askPermissionList,
-                        remindPermissionList
+                        askPermissionList
                     )
-                    finish()
+                   finish()
                 } else {
                     PermissionRequestEngine.sendPermissionEngine(
                         this,
-                        PERMISSION_ALL_DENIED_RESULTS,
-                        null,
-                        deniedList
+                        PERMISSION_AGAIN_NOT_REMIND,
+                        remindPermissionList
                     )
                     finish()
                 }
@@ -159,15 +169,15 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
 
     override fun onKeyUp(keyCode: Int, event: KeyEvent?): Boolean {
         if (keyCode == KeyEvent.KEYCODE_BACK) {
-            unRegisterEngine()
+            finish()
             return true
         }
         return super.onKeyUp(keyCode, event)
     }
 
-    private fun unRegisterEngine() {
+    override fun onDestroy() {
         PermissionRequestEngine.unRegisterPermissionEngine(this)
-        finish()
+        super.onDestroy()
     }
 
     private fun requestPermission(permissions: ArrayList<String>) {

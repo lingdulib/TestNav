@@ -18,27 +18,20 @@ object PermissionRequestEngine {
     private lateinit var mContext: Context
 
     private val mBroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            when (intent?.action) {
+        override fun onReceive(context: Context?, intent: Intent) {
+            val permissions = intent.extras?.getStringArrayList(PERMISSION_ASK_LIST_RETURN)
+            when (intent.action) {
                 PERMISSION_ALL_GRANT_RESULTS -> {
-                    val permissions = intent?.extras?.getStringArrayList(PERMISSION_ASK_LIST_RETURN)
                     mPermissionAuthorListener?.allGrantPermissions(permissions)
                 }
                 PERMISSION_SOME_DENIED_RESULTS -> {
-                    val permissions = intent?.extras?.getStringArrayList(PERMISSION_ASK_LIST_RETURN)
-                    val deniedPermissions = intent?.extras?.getStringArrayList(
-                        PERMISSION_REMIND_DENIED_RETURN
-                    )
-                    mPermissionAuthorListener?.someDeniedPermissions(permissions,deniedPermissions)
+                    mPermissionAuthorListener?.someDeniedPermissions(permissions)
                 }
-                PERMISSION_ALL_DENIED_RESULTS -> {
-                    val permissions = intent?.extras?.getStringArrayList(
-                        PERMISSION_REMIND_DENIED_RETURN
-                    )
-                    mPermissionAuthorListener?.allDeniedPermissions(permissions)
+                PERMISSION_RESTART_RESULTS -> {
+                    mPermissionAuthorListener?.againPermissions()
                 }
                 PERMISSION_AGAIN_NOT_REMIND -> {
-                    mPermissionAuthorListener?.againPermissions()
+                    mPermissionAuthorListener?.remindPermissions(permissions)
                 }
             }
         }
@@ -49,7 +42,7 @@ object PermissionRequestEngine {
         intentFilter.addCategory(Intent.CATEGORY_DEFAULT)
         intentFilter.addAction(PERMISSION_ALL_GRANT_RESULTS)
         intentFilter.addAction(PERMISSION_SOME_DENIED_RESULTS)
-        intentFilter.addAction(PERMISSION_ALL_DENIED_RESULTS)
+        intentFilter.addAction(PERMISSION_RESTART_RESULTS)
         intentFilter.addAction(PERMISSION_AGAIN_NOT_REMIND)
         LocalBroadcastManager.getInstance(context)
             .registerReceiver(mBroadcastReceiver, intentFilter)
@@ -62,14 +55,12 @@ object PermissionRequestEngine {
     internal fun sendPermissionEngine(
         context: Context,
         action: String,
-        permissions: ArrayList<String>?,
-        remindPermissions: ArrayList<String>?
+        permissions: ArrayList<String>?
     ) {
         val intent = Intent()
         intent.apply {
             val bundle = Bundle()
             bundle.putStringArrayList(PERMISSION_ASK_LIST_RETURN, permissions)
-            bundle.putStringArrayList(PERMISSION_REMIND_DENIED_RETURN, remindPermissions)
             putExtras(bundle)
             addCategory(Intent.CATEGORY_DEFAULT)
             setAction(action)
@@ -86,7 +77,7 @@ object PermissionRequestEngine {
         return this
     }
 
-    fun requestPermission(permissionRequestBean: PermissionRequestBean){
+    fun requestPermission(permissionRequestBean: PermissionRequestBean):PermissionRequestEngine{
         if(this::mContext.isInitialized){
             val intent=Intent(mContext,PermissionActivity::class.java)
             intent.apply {
@@ -95,10 +86,11 @@ object PermissionRequestEngine {
             }
             mContext.startActivity(intent)
         }
+        return this
     }
 
     //询问请求
-    fun requestAskPermission(permissionRequestBean: PermissionRequestBean){
+    fun requestAskPermission(permissionRequestBean: PermissionRequestBean):PermissionRequestEngine{
         if(this::mContext.isInitialized){
             val intent=Intent(mContext,PermissionActivity::class.java)
             intent.apply {
@@ -107,17 +99,32 @@ object PermissionRequestEngine {
             }
             mContext.startActivity(intent)
         }
+        return this
     }
 
     //打开系统设置,申请权限
-    fun requestOpenPermission(permissionRequestBean: PermissionRequestBean){
+    fun requestOpenPermission(permissionRequestBean: PermissionRequestBean):PermissionRequestEngine{
         if(this::mContext.isInitialized){
             val intent=Intent(mContext,PermissionActivity::class.java)
             intent.apply {
                 putExtra(PERMISSION_REQUEST_OBJ,permissionRequestBean)
-                putExtra(PERMISSION_REQUEST_TYPE, PERMISSION_ALL_DENIED_REQUEST)
+                putExtra(PERMISSION_REQUEST_TYPE, PERMISSION_REMIND_DENIED_REQUEST)
             }
             mContext.startActivity(intent)
         }
+        return this
+    }
+
+    //查看权限是否授予
+    fun queryPermissionAuthor(permissionRequestBean: PermissionRequestBean):PermissionRequestEngine{
+        if(this::mContext.isInitialized){
+            val intent=Intent(mContext,PermissionActivity::class.java)
+            intent.apply {
+                putExtra(PERMISSION_REQUEST_OBJ,permissionRequestBean)
+                putExtra(PERMISSION_REQUEST_TYPE, PERMISSION_ASK_NOT_AGAIN_REQUEST)
+            }
+            mContext.startActivity(intent)
+        }
+        return this
     }
 }
