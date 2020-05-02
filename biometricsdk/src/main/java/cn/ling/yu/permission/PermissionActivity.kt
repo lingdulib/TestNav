@@ -80,7 +80,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                             p0.dismiss()
                             finish()
                         }
-                    }.create().show()
+                    }.setCancelable(false).create().show()
             }
             PERMISSION_REMIND_DENIED_REQUEST->{
                 AlertDialog.Builder(this).setTitle("权限申请")
@@ -95,7 +95,7 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                             p0.dismiss()
                             finish()
                         }
-                    }.create().show()
+                    }.setCancelable(false).create().show()
             }
             PERMISSION_ASK_NOT_AGAIN_REQUEST-> {
                 PermissionRequestEngine.registerPermissionEngine(this)
