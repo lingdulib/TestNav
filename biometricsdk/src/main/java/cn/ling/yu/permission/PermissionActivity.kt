@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
+import cn.ling.yu.biometricsdk.R
 import cn.ling.yu.permission.bean.PermissionRequestBean
 import com.google.android.material.snackbar.Snackbar
 
@@ -68,8 +69,8 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                 }
             }
             PERMISSION_ASK_REQUEST->{
-               AlertDialog.Builder(this).setTitle("权限申请")
-                    .setMessage(mPermissionRequestBean!!.desc?:"使用此项功能，应用需要此项权限.")
+               AlertDialog.Builder(this).setTitle(resources.getString(R.string.permission_info_ask_title))
+                    .setMessage(mPermissionRequestBean!!.desc?:resources.getString(R.string.permission_info_ask_desc))
                     .setPositiveButton("确定"
                     ) { p0, _ -> if(permissionArrs!=null && permissionArrs.isNotEmpty()){
                         p0.dismiss()
@@ -83,8 +84,8 @@ class PermissionActivity : AppCompatActivity(), ActivityCompat.OnRequestPermissi
                     }.setCancelable(false).create().show()
             }
             PERMISSION_REMIND_DENIED_REQUEST->{
-                AlertDialog.Builder(this).setTitle("权限申请")
-                    .setMessage(mPermissionRequestBean!!.desc?:"使用此项功能，应用需要此项权限.")
+                AlertDialog.Builder(this).setTitle(resources.getString(R.string.permission_info_setting_title))
+                    .setMessage(mPermissionRequestBean!!.desc?:resources.getString(R.string.permission_info_setting_desc))
                     .setPositiveButton("去设置"
                     ) { p0, _ -> if(permissionArrs!=null && permissionArrs.isNotEmpty()){
                         p0.dismiss()

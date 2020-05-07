@@ -5,4 +5,9 @@
     <string name="prompt_info_description">登录需要指纹认证</string>
     <string name="prompt_info_use_app_password">取消</string>
     <string name="secret_key_name">biometric_sdk_encryption_key</string>
+
+    <string name="permission_info_ask_title">权限申请</string>
+    <string name="permission_info_ask_desc">使用此项功能，应用需要此项权限.</string>
+    <string name="permission_info_setting_title">权限申请</string>
+    <string name="permission_info_setting_desc">"使用此项功能，应用需要此项权限."</string>
 </resources>
