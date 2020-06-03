@@ -42,6 +42,8 @@ object BiometricDialogUtils {
         }
     }
 
+    fun canFingerprint(appCompatActivity: AppCompatActivity):Boolean=BiometricManager.from(appCompatActivity.applicationContext).canAuthenticate()==BiometricManager.BIOMETRIC_SUCCESS
+
     private fun authorBiometricDecryptionOrNoValid(
         appCompatActivity: AppCompatActivity,
         ciphertextWrapper: CiphertextWrapper?
